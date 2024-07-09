@@ -22,7 +22,7 @@ class RedisClient {
   }
   async set(key, value, duration) {
     return new Promise((resolve, reject) => {
-      this.client.set(key, duration, value, (err, reply) => {
+      this.client.setex(key, duration, value, (err, reply) => {
         if (err) {
           reject(err);
         }

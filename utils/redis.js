@@ -6,7 +6,7 @@ class RedisClient {
     this.client.on('error', (err) => console.error());
     this.client.on('connect', () => {
       console.log('Connected!');
-  });
+    });
   }
 
   isAlive() {
@@ -23,6 +23,7 @@ class RedisClient {
       });
     });
   }
+
   async set(key, value, duration) {
     return new Promise((resolve, reject) => {
       this.client.setex(key, duration, value, (err, reply) => {
@@ -33,6 +34,7 @@ class RedisClient {
       });
     });
   }
+
   async del(key) {
     return new Promise((resolve, reject) => {
       this.client.del(key, (err, reply) => {

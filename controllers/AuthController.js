@@ -1,6 +1,8 @@
-import User from '../models/User';
-import { generateUUID } from '../utils/uuid';
-import redisClient from '../utils/redis';
+// import { generateUUID } from '../utils/uuid';    NOT SURE IF NEEDED
+
+const crypto = require('crypto');
+
+const redisClient = require('../utils/redis');
 
 class AuthController {
   static async getConnect(req, res) {
@@ -79,4 +81,4 @@ class AuthController {
   }
 }
 
-export default AuthController;
+module.exports = AuthController;

@@ -1,5 +1,6 @@
-import User from '../models/User';
-import { generateSHA1Hash } from '../utils/hash';
+const crypto = require('crypto');
+
+const dbClient = require('../utils/db');
 
 class UsersController {
   static async postNew(req, res) {
@@ -15,19 +16,16 @@ class UsersController {
       }
 
       // Check if user already exists
-      const existingUser = await User.findOne({ email });
+      const existingUser = await dbClient.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ error: 'Already exists' });
       }
 
-      // Hash the password
-      const hashedPassword = generateSHA1Hash(password);
+      // Hash the password using crypto
+      const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
 
       // Create new user
-      const newUser = new User({
-        email,
-        password: hashedPassword,
-      });
+      const newUser = dbClient.createUser({ email, password: hashedPassword });
 
       await newUser.save();
 
@@ -40,4 +38,4 @@ class UsersController {
   }
 }
 
-export default UsersController;
+module.exports = UsersController;

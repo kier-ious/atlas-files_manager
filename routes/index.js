@@ -1,6 +1,7 @@
-import express from 'express';
-import AuthController from '../controllers/AuthController';
-import UsersController from '../controllers/UsersController';
+const express = require('express');
+const AuthController = require('../controllers/AuthController');
+const UsersController = require('../controllers/UsersController');
+const FilesController = require('../controllers/FilesController');
 
 const router = express.Router();
 
@@ -12,4 +13,7 @@ router.get('/connect', AuthController.getConnect);
 router.get('/disconnect', AuthController.getDisconnect);
 router.get('/users/me', AuthController.getMe);
 
-export default router;
+// Files routes
+router.post('/files', FilesController.postUpload);
+
+module.exports = router;

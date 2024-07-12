@@ -10,7 +10,7 @@ class DBClient {
   }
 
   async connect() {
-    const url = 'mongodb+srv://test:test@cluster0.9fen9wg.mongodb.net/';
+    const url = 'mongodb+srv://kier:kier@cluster0.9fen9wg.mongodb.net/';
     try {
       this.client = new MongoClient(url, { useUnifiedTopology: true });
       await this.client.connect();

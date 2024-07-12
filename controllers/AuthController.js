@@ -1,8 +1,22 @@
 // import { generateUUID } from '../utils/uuid';    NOT SURE IF NEEDED
-
 const crypto = require('crypto');
-
 const redisClient = require('../utils/redis');
+
+const User = {
+
+  data: [
+    { email: 'user1@example.com', password: 'hashedPassword1', _id: '1' },
+    { email: 'user2@example.com', password: 'hashedPassword2', _id: '2' },
+  ],
+
+  findOne(email) {
+    return this.data.find(user => user.email === email);
+  },
+
+  findById(id) {
+    return this.data.find(user => user._id === id);
+  },
+};
 
 class AuthController {
   static async getConnect(req, res) {
@@ -17,7 +31,13 @@ class AuthController {
 
     try {
       const user = await User.findOne({ email });
-      if (!user || user.password !== generateSHA1Hash(password)) {
+      if (!user) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+
+      // Improved: Verify password using secure comparison
+      const isValidPassword = await comparePassword(password, user.password);
+      if (!isValidPassword) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
 

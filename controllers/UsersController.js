@@ -1,9 +1,10 @@
 const crypto = require('crypto');
-
 const dbClient = require('../utils/db');
 
 class UsersController {
   static async postNew(req, res) {
+    console.log('Request Body:', req.body); // Log the request body to debug
+
     const { email, password } = req.body;
 
     try {
@@ -15,8 +16,12 @@ class UsersController {
         return res.status(400).json({ error: 'Missing password' });
       }
 
+      // Connect to the database
+      const db = dbClient.getDB(); // Use getDB() to access the MongoDB database instance
+      const usersCollection = db.collection('users');
+
       // Check if user already exists
-      const existingUser = await dbClient.findOne({ email });
+      const existingUser = await usersCollection.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ error: 'Already exists' });
       }
@@ -25,14 +30,17 @@ class UsersController {
       const hashedPassword = crypto.createHash('sha1').update(password).digest('hex');
 
       // Create new user
-      const newUser = dbClient.createUser({ email, password: hashedPassword });
+      const newUser = {
+        email,
+        password: hashedPassword,
+      };
 
-      await newUser.save();
+      const result = await usersCollection.insertOne(newUser);
 
       // Return the new user's email and id
-      return res.status(201).json({ email: newUser.email, id: newUser._id });
+      return res.status(201).json({ email: newUser.email, id: result.insertedId });
     } catch (err) {
-      console.error(err);
+      console.error('Error in postNew:', err);
       return res.status(500).json({ error: 'Server error' });
     }
   }

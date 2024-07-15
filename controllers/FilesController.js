@@ -126,6 +126,70 @@ class FilesController {
                                       .toArray();
     return res.status(200).json(files);
   }
+
+  static async putPublish(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const fileId = req.params.id;
+
+    const db = dbClient.getDB();
+    const filesCollection = db.collection('files');
+
+    // Check if the file exists and belongs to the user
+    const file = await filesCollection.findOne({ _id: new ObjectId(fileId), userId });
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    // Update isPublic to true
+    const updatedFile = await filesCollection.findOneAndUpdate(
+      { _id: new ObjectId(fileId), userId },
+      { $set: { isPublic: true } },
+      { returnOriginal: false }
+    );
+
+    return res.status(200).json(updatedFile.value);
+  }
+
+  static async putUnpublish(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const fileId = req.params.id;
+
+    const db = dbClient.getDB();
+    const filesCollection = db.collection('files');
+
+    // Check if the file exists and belongs to the user
+    const file = await filesCollection.findOne({ _id: new ObjectId(fileId), userId });
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    // Update isPublic to false
+    const updatedFile = await filesCollection.findOneAndUpdate(
+      { _id: new ObjectId(fileId), userId },
+      { $set: { isPublic: false } },
+      { returnOriginal: false }
+    );
+
+    return res.status(200).json(updatedFile.value);
+  }
 }
 
 module.exports = FilesController;

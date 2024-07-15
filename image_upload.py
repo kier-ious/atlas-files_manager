@@ -1,13 +1,8 @@
-import os
-import sys
 import base64
 import requests
+import sys
 
 file_path = sys.argv[1]
-if not os.path.exists(file_path):
-    print(f"Error: File '{file_path}' not found.")
-    sys.exit(1)
-
 file_name = file_path.split('/')[-1]
 
 file_encoded = None
@@ -20,3 +15,4 @@ r_headers = {'X-Token': sys.argv[2]}
 
 r = requests.post("http://0.0.0.0:5000/files", json=r_json, headers=r_headers)
 print(r.json())
+print('Not getting image')

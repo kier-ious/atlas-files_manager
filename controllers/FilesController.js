@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { ObjectId } = require("mongodb");
 const { v4: uuidv4 } = require('uuid');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
@@ -35,7 +36,8 @@ class FilesController {
     const filesCollection = db.collection('files');
 
     if (parentId) {
-      const parent = await filesCollection.findOne({ _id: dbClient.getObjectId(parentId) });
+      console.log(parentId)
+      const parent = await filesCollection.findOne({ _id: new ObjectId(parentId) });
       if (!parent) {
         return res.status(400).json({ error: 'Parent not found' });
       }

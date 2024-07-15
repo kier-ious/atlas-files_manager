@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { ObjectId } = require("mongodb");
+const { ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
@@ -36,7 +36,6 @@ class FilesController {
     const filesCollection = db.collection('files');
 
     if (parentId) {
-      console.log(parentId)
       const parent = await filesCollection.findOne({ _id: new ObjectId(parentId) });
       if (!parent) {
         return res.status(400).json({ error: 'Parent not found' });
@@ -77,6 +76,56 @@ class FilesController {
       parentId: newFile.parentId,
       localPath: newFile.localPath,
     });
+  }
+
+  static async getFileById(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const fileId = req.params.id;
+
+    const db = dbClient.getDB();
+    const filesCollection = db.collection('files');
+
+    const file = await filesCollection.findOne({ _id: new ObjectId(fileId), userId });
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    return res.status(200).json(file);
+  }
+
+  static async getFiles(req, res) {
+    const token = req.headers['x-token'];
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const userId = await redisClient.get(`auth_${token}`);
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const { parentId = 0, page = 0 } = req.query;
+    const pageSize = 20;
+    const skip = page * pageSize;
+
+    const db = dbClient.getDB();
+    const filesCollection = db.collection('files');
+
+    const files = await filesCollection.find({ userId, parentId })
+                                       .skip(skip)
+                                       .limit(pageSize)
+                                       .toArray();
+
+    return res.status(200).json(files);
   }
 }
 

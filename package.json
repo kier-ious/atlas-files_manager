@@ -22,7 +22,7 @@
     "express": "^4.19.2",
     "image-thumbnail": "^1.0.10",
     "mime-types": "^2.1.27",
-    "mongodb": "^3.5.9",
+    "mongodb": "^3.7.4",
     "multer": "^1.4.5-lts.1",
     "python": "0.0.4",
     "redis": "^2.8.0",

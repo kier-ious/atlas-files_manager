@@ -121,10 +121,9 @@ class FilesController {
     const filesCollection = db.collection('files');
 
     const files = await filesCollection.find({ userId, parentId })
-                                       .skip(skip)
-                                       .limit(pageSize)
-                                       .toArray();
-
+                                      .skip(skip)
+                                      .limit(pageSize)
+                                      .toArray();
     return res.status(200).json(files);
   }
 }

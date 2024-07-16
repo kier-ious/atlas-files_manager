@@ -4,7 +4,7 @@ const routes = require('./routes');
 const dbClient = require('./utils/db'); // Adjust the path to your db.js
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 5001;
 
 // Middleware to parse JSON bodies
 app.use(bodyParser.json());

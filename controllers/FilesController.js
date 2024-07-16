@@ -5,8 +5,10 @@ const { ObjectId } = require('mongodb');
 const { v4: uuidv4 } = require('uuid');
 const dbClient = require('../utils/db');
 const redisClient = require('../utils/redis');
+const Bull = require('bull');
 
 const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
+const fileQueue = new Bull('fileQueue');
 
 class FilesController {
   static async authorize(req, res) {
@@ -76,6 +78,11 @@ class FilesController {
       };
 
       const result = await filesCollection.insertOne(newFile);
+
+      if (type === 'image') {
+        await fileQueue.add({ userId, fileId: result.insertedId.toString() });
+      }
+
       return res.status(201).json({
         id: result.insertedId,
         userId,
@@ -189,10 +196,12 @@ class FilesController {
     }
   }
 
-  static async getFile(req, res) {
+  static async getFileData(req, res) {
     try {
       const token = req.headers['x-token'];
       const fileId = req.params.id;
+      const size = req.query.size;
+
       const db = dbClient.getDB();
       const filesCollection = db.collection('files');
 
@@ -211,12 +220,23 @@ class FilesController {
         return res.status(400).json({ error: 'A folder doesn\'t have content' });
       }
 
-      if (!fs.existsSync(file.localPath)) {
+      let localPath = file.localPath;
+      if (size) {
+        const sizeSuffix = `_${size}`;
+        const sizedPath = `${file.localPath}${sizeSuffix}`;
+        if (fs.existsSync(sizedPath)) {
+          localPath = sizedPath;
+        } else {
+          return res.status(404).json({ error: 'Not found' });
+        }
+      }
+
+      if (!fs.existsSync(localPath)) {
         return res.status(404).json({ error: 'Not found' });
       }
 
       const mimeType = mime.lookup(file.name);
-      const fileContent = fs.readFileSync(file.localPath);
+      const fileContent = fs.readFileSync(localPath);
 
       res.setHeader('Content-Type', mimeType);
       res.send(fileContent);
